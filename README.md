@@ -207,7 +207,7 @@ secureflow-devsecops/
 | AWS CLI | 2.0 |
 | Git | Any |
 | GitHub Account | Required |
-| AWS Account | Free Tier Compatible |
+| AWS Account | Required |
 
 Verify installation:
 
@@ -344,9 +344,10 @@ kms_key_arn = "arn:aws:kms:us-east-1:XXXXXXXXXXXX:key/xxxxxxxx-xxxx"
 ------
 
 ### 09 — GitHub Actions Pipeline
-<img width="700" height="400" alt="github-actions-pipeline-green" src="https://github.com/user-attachments/assets/2202876d-5c10-4968-9082-5cc01f316382" />
+<img width="700" height="400" alt="github-actions-pipeline-green" src="https://github.com/user-attachments/assets/68518015-9d3b-4c40-8ab9-872d92b2f0db" />
 
----
+
+------
 ### 10 — tfsec passed
 <img width="700" height="400" alt="tfsec passed" src="https://github.com/user-attachments/assets/e12c756a-078d-452f-9908-152fe7afdaa1" />
 
