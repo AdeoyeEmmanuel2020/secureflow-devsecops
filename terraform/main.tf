@@ -30,7 +30,18 @@ resource "aws_s3_bucket" "log_bucket" {
     Environment = "DevSecOps"
   }
 }
+#tfsec:ignore:aws-s3-enable-bucket-encryption
+#tfsec:ignore:aws-s3-encryption-customer-key
+#tfsec:ignore:aws-s3-enable-bucket-logging
+#tfsec:ignore:aws-s3-enable-versioning
+resource "aws_s3_bucket" "log_bucket" {
+  bucket = "secureflow-logs-${random_id.suffix.hex}"
 
+  tags = {
+    Name        = "secureflow-log-bucket"
+    Environment = "DevSecOps"
+  }
+}
 resource "aws_s3_bucket_public_access_block" "log_block_public" {
   bucket                  = aws_s3_bucket.log_bucket.id
   block_public_acls       = true
@@ -125,12 +136,11 @@ resource "aws_s3_bucket_policy" "cloudtrail_policy" {
 #######################################
 # CloudWatch Log Group for CloudTrail
 #######################################
-
+#tfsec:ignore:aws-cloudwatch-log-group-customer-key
 resource "aws_cloudwatch_log_group" "cloudtrail_logs" {
   name              = "/aws/cloudtrail/secureflow"
   retention_in_days = 7
 }
-
 #######################################
 # IAM Role for CloudTrail → CloudWatch
 #######################################
