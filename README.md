@@ -30,6 +30,7 @@
 - [Deployed Infrastructure — Live Resource IDs](#deployed-infrastructure--live-resource-ids)
 - [Terminal Evidence](#terminal-evidence)
 - [AWS Console Evidence](#aws-console-evidence)
+- [GitHub Actions Pipeline](#GitHub-Actions-Pipeline)
 - [Destroy Infrastructure](#destroy-infrastructure)
 - [Contributing](#contributing)
 - [Author](#author)
@@ -309,24 +310,51 @@ kms_key_arn = "arn:aws:kms:us-east-1:XXXXXXXXXXXX:key/xxxxxxxx-xxxx"
 <img width="700" height="400" alt="S3 bucket" src="https://github.com/user-attachments/assets/6f3dd567-a5be-4ec1-b0f6-11ea9730623c" />
 
 ---
+### 03 - Versioning Enabled
+<img width="700" height="400" alt="Versioning Enabled" src="https://github.com/user-attachments/assets/cd6d1b40-36ab-4957-ad19-052afbca69a6" />
 
-### 03 — CloudTrail Configuration
+------
+### 04 - Multi-region
+<img width="700" height="400" alt="Multi-region" src="https://github.com/user-attachments/assets/d43130a6-403e-46e9-9734-d9ae952b5c08" />
 
+------
+### 05 - Encryption Enabled (AES-256)
+<img width="700" height="400" alt="Encryption Enabled (AES-256)" src="https://github.com/user-attachments/assets/6026eeb5-d12f-4539-9135-ab4b3233b407" />
 
+---------
+### 06 - Tags
+<img width="700" height="400" alt="Tags" src="https://github.com/user-attachments/assets/ae54164d-f680-4b4a-bc31-ed381b5922c6" />
 
+---------
 
+### 07 — CloudTrail Configuration
+
+<img width="700" height="400" alt="Trail name" src="https://github.com/user-attachments/assets/e67c396c-fb4a-40ef-bc95-336739c4888d" />
 
 ---
+### 07 — Status Logging enabled
+<img width="700" height="400" alt="Status Logging enabled" src="https://github.com/user-attachments/assets/bc2a529a-3ba7-4193-a21e-89ae6a49b5f8" />
 
-### 04 — GitHub Actions Pipeline
-![Pipeline](screenshots/01-github-actions-pipeline-green.png)
+----
 
-- tfsec passed
-- Checkov ran
-- All stages green
-- No HIGH severity findings
+### 08 — AWS Cloud Trail Write policy
+
+<img width="700" height="400" alt="AWSCloudTrailWrite" src="https://github.com/user-attachments/assets/3008cade-9b86-4125-8444-095e7becee7f" />
+
+------
+
+### 09 — GitHub Actions Pipeline
+<img width="700" height="400" alt="github-actions-pipeline-green" src="https://github.com/user-attachments/assets/2202876d-5c10-4968-9082-5cc01f316382" />
 
 ---
+### 10 — tfsec passed
+<img width="700" height="400" alt="tfsec passed" src="https://github.com/user-attachments/assets/e12c756a-078d-452f-9908-152fe7afdaa1" />
+
+-----
+### 11 — Checkov ran
+<img width="700" height="400" alt="Checkov ran" src="https://github.com/user-attachments/assets/ff87ad8e-0a03-4474-8367-9b5814b94e75" />
+
+-----
 
 ## Destroy Infrastructure
 
