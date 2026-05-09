@@ -2,6 +2,22 @@ resource "random_id" "suffix" {
   byte_length = 4
 }
 
+data "aws_caller_identity" "current" {}
+
+#######################################
+# KMS Key for Encryption
+#######################################
+
+resource "aws_kms_key" "secure_key" {
+  description             = "KMS key for SecureFlow encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+}
+
+#######################################
+# Secure S3 Bucket
+#######################################
+
 resource "aws_s3_bucket" "secure_bucket" {
   bucket = "secureflow-${random_id.suffix.hex}"
 
@@ -9,6 +25,14 @@ resource "aws_s3_bucket" "secure_bucket" {
     Name        = "secureflow-devsecops"
     Environment = "DevSecOps"
   }
+}
+
+resource "aws_s3_bucket_public_access_block" "block_public" {
+  bucket                  = aws_s3_bucket.secure_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_versioning" "versioning" {
@@ -24,11 +48,15 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      kms_master_key_id = aws_kms_key.secure_key.arn
+      sse_algorithm     = "aws:kms"
     }
   }
 }
-data "aws_caller_identity" "current" {}
+
+#######################################
+# CloudTrail Bucket Policy
+#######################################
 
 resource "aws_s3_bucket_policy" "cloudtrail_policy" {
   bucket = aws_s3_bucket.secure_bucket.id
@@ -62,12 +90,20 @@ resource "aws_s3_bucket_policy" "cloudtrail_policy" {
     ]
   })
 }
+
+#######################################
+# Secure CloudTrail
+#######################################
+
 resource "aws_cloudtrail" "secure_trail" {
   name                          = "secureflow-trail"
   s3_bucket_name                = aws_s3_bucket.secure_bucket.id
   include_global_service_events = true
   is_multi_region_trail         = true
   enable_logging                = true
+
+  enable_log_file_validation = true
+  kms_key_id                 = aws_kms_key.secure_key.arn
 
   depends_on = [aws_s3_bucket_policy.cloudtrail_policy]
 }
