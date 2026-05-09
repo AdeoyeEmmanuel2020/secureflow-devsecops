@@ -22,14 +22,6 @@ resource "aws_kms_key" "secure_key" {
 # Logging Bucket for S3 Access Logs
 #######################################
 
-resource "aws_s3_bucket" "log_bucket" {
-  bucket = "secureflow-logs-${random_id.suffix.hex}"
-
-  tags = {
-    Name        = "secureflow-log-bucket"
-    Environment = "DevSecOps"
-  }
-}
 #tfsec:ignore:aws-s3-enable-bucket-encryption
 #tfsec:ignore:aws-s3-encryption-customer-key
 #tfsec:ignore:aws-s3-enable-bucket-logging
@@ -42,6 +34,7 @@ resource "aws_s3_bucket" "log_bucket" {
     Environment = "DevSecOps"
   }
 }
+
 resource "aws_s3_bucket_public_access_block" "log_block_public" {
   bucket                  = aws_s3_bucket.log_bucket.id
   block_public_acls       = true
