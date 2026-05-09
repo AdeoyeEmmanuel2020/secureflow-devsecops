@@ -61,31 +61,7 @@ AWS IAM, tfsec, Checkov, Git, AWS CLI.
 
 ## Architecture
 
-```
-Developer
-   │
-   ▼
-GitHub Repository
-   │
-   ▼
-GitHub Actions Pipeline
-   ├── Terraform Init
-   ├── Terraform Format Check
-   ├── Terraform Validate
-   ├── tfsec Security Scan
-   └── Checkov Policy Scan
-            │
-            ▼
-        AWS Environment
-            ├── KMS (Customer Managed Key)
-            ├── S3 (Encrypted + Versioned + Public Access Blocked)
-            ├── CloudTrail (Multi-Region + Log Validation)
-            ├── CloudWatch Logs
-            └── IAM Role (Least Privilege)
-```
-
-Flow:  
-Developer → GitHub → CI Security Gates → AWS Secure Deployment
+<img width="700" height="400" alt="Architecture" src="https://github.com/user-attachments/assets/ff17e339-7282-4fe1-8f55-023995e4949c" />
 
 ---
 
@@ -102,7 +78,7 @@ This shifts security left in the development lifecycle.
 
 ### Why use Checkov with scoped enforcement?
 
-Enterprise compliance tools often include controls irrelevant to small scoped environments.
+Enterprise compliance tools often include controls irrelevant to small-scoped environments.
 
 Instead of blindly enforcing every policy, this project demonstrates:
 
@@ -186,14 +162,14 @@ On push to main branch
 
 Stages:
 
-1. ✅ Terraform Init  
-2. ✅ Terraform Format  
-3. ✅ Terraform Validate  
-4. ✅ tfsec Scan (Blocks HIGH findings)  
-5. ✅ Checkov Scan (Scoped Governance)
+1. Terraform Init  
+2. Terraform Format  
+3. Terraform Validate  
+4. tfsec Scan (Blocks HIGH findings)  
+5. Checkov Scan (Scoped Governance)
 
 Pipeline Status:
-✅ All stages passed (Green)
+All stages passed (Green)
 
 ---
 
@@ -323,33 +299,22 @@ kms_key_arn = "arn:aws:kms:us-east-1:XXXXXXXXXXXX:key/xxxxxxxx-xxxx"
 ## Terminal Evidence
 
 ### 01 — Terraform Apply Output
-![Terraform Apply](screenshots/04-terminal-terraform-apply-success.png)
-
-All resources created successfully.  
-Outputs confirm bucket name, trail name, and KMS ARN.
+<img width="700" height="400" alt="Terraform Apply Output" src="https://github.com/user-attachments/assets/c30d8a63-e992-463f-b115-16fc0f9a2506" />
 
 ---
 
 ## AWS Console Evidence
 
-### 02 — S3 Bucket Configuration
-![S3](screenshots/02-s3-bucket-encrypted-versioned.png)
-
-- Encryption Enabled (AES-256 via KMS)
-- Versioning Enabled
-- Tags Applied
-- Public Access Blocked
+### 02 — S3 Bucket
+<img width="700" height="400" alt="S3 bucket" src="https://github.com/user-attachments/assets/6f3dd567-a5be-4ec1-b0f6-11ea9730623c" />
 
 ---
 
 ### 03 — CloudTrail Configuration
-![CloudTrail](screenshots/03-cloudtrail-secure-config.png)
 
-- Trail name: secureflow-trail
-- Status: Logging enabled
-- Multi-region: Yes
-- Log validation: Enabled
-- CloudWatch integration active
+
+
+
 
 ---
 
