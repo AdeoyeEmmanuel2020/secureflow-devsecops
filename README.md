@@ -84,28 +84,8 @@ SecureFlow solves these by embedding security directly into the CI/CD pipeline.
 
 # Architecture
 
-```
-Developer
-    │
-    ▼
-GitHub Repository
-    │
-    ▼
-GitHub Actions CI/CD Pipeline
-    ├── Terraform Init
-    ├── Terraform Format
-    ├── Terraform Validate
-    ├── tfsec Security Scan
-    └── Checkov Policy Scan
-            │
-            ▼
-        AWS Environment
-            ├── KMS (Customer Managed Key)
-            ├── S3 (Encrypted + Versioned + Public Access Blocked)
-            ├── CloudTrail (Multi-region + Log Validation)
-            ├── CloudWatch Logs
-            └── IAM Least Privilege Role
-```
+<img width="700" height="400" alt="Architecture" src="https://github.com/user-attachments/assets/f95a54c0-628d-4040-a06d-26c043ee3656" />
+
 
 This architecture simulates how modern enterprises enforce security before infrastructure deployment.
 
@@ -144,16 +124,16 @@ Provides cryptographic integrity verification.
 
 | Layer | Control | AWS Service | Status |
 |--------|----------|-------------|--------|
-| Identity | Least Privilege Role | IAM | ✅ Enforced |
-| Data | Encryption at Rest | KMS CMK | ✅ Enabled |
-| Data | Versioning | S3 | ✅ Enabled |
-| Network | Public Access Block | S3 | ✅ Enabled |
-| Audit | API Logging | CloudTrail | ✅ Multi-region |
-| Audit | Log Validation | CloudTrail | ✅ Enabled |
-| Audit | Centralized Logs | CloudWatch | ✅ Integrated |
-| CI/CD | IaC Security Scan | tfsec | ✅ Passed |
-| CI/CD | Policy Scan | Checkov | ✅ Scoped Enforcement |
-| CI/CD | Format Validation | Terraform fmt | ✅ Enforced |
+| Identity | Least Privilege Role | IAM | Enforced |
+| Data | Encryption at Rest | KMS CMK | Enabled |
+| Data | Versioning | S3 | Enabled |
+| Network | Public Access Block | S3 |  Enabled |
+| Audit | API Logging | CloudTrail | Multi-region |
+| Audit | Log Validation | CloudTrail |  Enabled |
+| Audit | Centralized Logs | CloudWatch |  Integrated |
+| CI/CD | IaC Security Scan | tfsec |  Passed |
+| CI/CD | Policy Scan | Checkov |  Scoped Enforcement |
+| CI/CD | Format Validation | Terraform fmt |  Enforced |
 
 ---
 
