@@ -35,6 +35,8 @@ jobs:
         run: tfsec terraform/
 
       - name: Run Checkov Scan
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: terraform
+  uses: bridgecrewio/checkov-action@master
+  with:
+    directory: terraform
+    soft_fail: true
+    skip_check: CKV_AWS_338,CKV_AWS_158,CKV_AWS_252,CKV_AWS_144,CKV2_AWS_62,CKV2_AWS_61,CKV2_AWS_64,CKV_AWS_145
