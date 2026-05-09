@@ -1,143 +1,178 @@
 # SecureFlow — Enterprise DevSecOps CI/CD Security Pipeline on AWS
 
-<div align="center">
+> A production-grade DevSecOps security enforcement pipeline built entirely with Terraform and GitHub Actions.
+> Demonstrates Infrastructure-as-Code hardening, automated security scanning,
+> encryption governance, centralized logging, and CI/CD policy enforcement.
 
-![AWS](https://img.shields.io/badge/AWS-Cloud%20Security-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
-![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
-![tfsec](https://img.shields.io/badge/tfsec-IaC%20Security-2E8B57?style=for-the-badge)
-![Checkov](https://img.shields.io/badge/Checkov-Policy%20as%20Code-DC143C?style=for-the-badge)
-![Encryption](https://img.shields.io/badge/Encryption-KMS%20Enabled-28A745?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-CI%20Green-00C851?style=for-the-badge)
-
-**An enterprise-grade DevSecOps CI/CD security enforcement pipeline built on AWS Free Tier**  
-**Infrastructure as Code | Security-First CI/CD | Automated Policy Enforcement | Zero Manual Console Configuration**
-</div>
+![Terraform](https://img.shields.io/badge/Terraform-v1.5%2B-7B42BC?logo=terraform&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-Cloud-FF9900?logo=amazon-aws&logoColor=white)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)
+![Security](https://img.shields.io/badge/Security-Shift--Left-3fb950)
+![tfsec](https://img.shields.io/badge/IaC%20Scan-tfsec-2E8B57)
+![Checkov](https://img.shields.io/badge/Policy%20Scan-Checkov-DC143C)
+![Encryption](https://img.shields.io/badge/KMS-Enabled-28A745)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
 ---
 
-# Table of Contents
+## Table of Contents
 
 - [About This Project](#about-this-project)
 - [Architecture](#architecture)
-- [Architecture Decisions & Rationale](#architecture-decisions--rationale)
+- [Architecture Decisions and Rationale](#architecture-decisions-and-rationale)
 - [Security Controls Implemented](#security-controls-implemented)
 - [CI/CD Security Enforcement](#cicd-security-enforcement)
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-- [Deployment Screenshots](#deployment-screenshots)
-- [Governance Strategy](#governance-strategy)
+- [Module Documentation](#module-documentation)
+- [Compliance Alignment](#compliance-alignment)
+- [Deployed Infrastructure — Live Resource IDs](#deployed-infrastructure--live-resource-ids)
+- [Terminal Evidence](#terminal-evidence)
+- [AWS Console Evidence](#aws-console-evidence)
 - [Destroy Infrastructure](#destroy-infrastructure)
+- [Contributing](#contributing)
 - [Author](#author)
 - [License](#license)
 
 ---
 
-# About This Project  
-**DevSecOps Engineer Perspective**
+## About This Project
 
-SecureFlow was designed and implemented from the perspective of a **DevSecOps Engineer responsible for enforcing security gates before infrastructure reaches production**.
+This project provisions a fully hardened AWS security logging and encryption foundation using Terraform — enforced by an automated DevSecOps CI/CD pipeline.
 
-This is not simply Terraform deployment.  
-This project demonstrates:
+Every security decision is intentional and documented.
 
-- Shift-left security enforcement
-- Automated CI/CD pipeline validation
-- Infrastructure-as-Code security scanning
-- Risk-based policy governance
-- AWS hardening best practices
-- Audit logging architecture
+**What makes this different from a typical cloud project:**
 
-Everything is provisioned via Terraform.  
-Every push to GitHub triggers security validation.  
-No manual AWS console configuration was performed.
+- Infrastructure cannot reach production without passing tfsec and Checkov.
+- Encryption is enforced via Customer Managed KMS keys.
+- CloudTrail is multi-region with log file validation enabled.
+- S3 buckets enforce versioning, encryption, and public access blocking.
+- IAM policies follow least privilege principles.
+- CI/CD pipeline blocks insecure Infrastructure-as-Code before merge.
+- All configuration is written in Terraform — no manual AWS console setup.
 
----
-
-## The Problem This Solves
-
-Many organizations deploying infrastructure via Terraform face these challenges:
-
-1. **Insecure IaC reaches production** — No automated security scanning
-2. **Compliance drift** — No validation of encryption, logging, or access controls
-3. **Manual review bottlenecks** — Security reviews delay deployment cycles
-4. **Lack of governance visibility** — No documented enforcement strategy
-
-SecureFlow solves these by embedding security directly into the CI/CD pipeline.
+**Technologies used:**
+Terraform, GitHub Actions, AWS KMS, AWS S3, AWS CloudTrail, AWS CloudWatch,
+AWS IAM, tfsec, Checkov, Git, AWS CLI.
 
 ---
 
-## My Role on This Project
+## Architecture
 
-| Responsibility | Detail |
-|----------------|--------|
-| DevSecOps Architecture | Designed CI/CD security enforcement workflow |
-| Infrastructure as Code | Authored Terraform resources for AWS security hardening |
-| CI/CD Pipeline Design | Built GitHub Actions workflow with security gates |
-| Encryption Strategy | Implemented KMS-based encryption across resources |
-| Audit Logging | Architected multi-region CloudTrail with validation |
-| Governance Enforcement | Integrated tfsec and Checkov with scoped policy tuning |
-| IAM Security | Designed least-privilege CloudTrail → CloudWatch role |
+```
+Developer
+   │
+   ▼
+GitHub Repository
+   │
+   ▼
+GitHub Actions Pipeline
+   ├── Terraform Init
+   ├── Terraform Format Check
+   ├── Terraform Validate
+   ├── tfsec Security Scan
+   └── Checkov Policy Scan
+            │
+            ▼
+        AWS Environment
+            ├── KMS (Customer Managed Key)
+            ├── S3 (Encrypted + Versioned + Public Access Blocked)
+            ├── CloudTrail (Multi-Region + Log Validation)
+            ├── CloudWatch Logs
+            └── IAM Role (Least Privilege)
+```
+
+Flow:  
+Developer → GitHub → CI Security Gates → AWS Secure Deployment
 
 ---
 
-# Architecture
-
-<img width="700" height="400" alt="Architecture" src="https://github.com/user-attachments/assets/f95a54c0-628d-4040-a06d-26c043ee3656" />
-
-
-This architecture simulates how modern enterprises enforce security before infrastructure deployment.
-
----
-
-# Architecture Decisions & Rationale
+## Architecture Decisions and Rationale
 
 ### Why integrate tfsec in CI/CD?
-Manual Terraform review does not scale.  
-tfsec blocks insecure IaC before it merges into main.
 
-### Why integrate Checkov with scoped enforcement?
-Not all enterprise policies apply to Free Tier demo environments.  
-Security governance requires **risk-based enforcement**, not checkbox compliance.
+Manual code review is inconsistent and error-prone.  
+tfsec blocks insecure Terraform configurations (e.g., unencrypted storage, open security groups) before they are merged into main.
+
+This shifts security left in the development lifecycle.
+
+---
+
+### Why use Checkov with scoped enforcement?
+
+Enterprise compliance tools often include controls irrelevant to small scoped environments.
+
+Instead of blindly enforcing every policy, this project demonstrates:
+
+- Risk-based governance
+- Scoped policy enforcement
+- Soft-fail on non-critical controls
+- Hard-fail on high-risk misconfigurations
+
+This mirrors real-world DevSecOps governance strategy.
+
+---
 
 ### Why Multi-Region CloudTrail?
-Attackers often operate in unused regions.  
-Multi-region logging eliminates blind spots.
 
-### Why KMS CMK instead of default encryption?
-Customer Managed Keys allow:
-- Explicit key policies
-- Rotation control
-- Access governance
-- Audit visibility
+Attackers frequently create resources in unused AWS regions to avoid detection.
+
+Enabling multi-region logging ensures:
+
+- No regional blind spots
+- Full API activity capture
+- Improved forensic visibility
+
+---
 
 ### Why enable Log File Validation?
-Prevents tampering of CloudTrail logs.  
-Provides cryptographic integrity verification.
+
+CloudTrail log validation creates hash digests for log files.
+
+If a log file is altered, the validation check fails.
+
+This ensures:
+
+- Tamper detection
+- Forensic integrity
+- Audit reliability
 
 ---
 
-# Security Controls Implemented
+### Why use a Customer Managed KMS Key instead of AWS Managed Keys?
 
-## Defence-in-Depth Matrix
+Customer Managed Keys allow:
 
-| Layer | Control | AWS Service | Status |
-|--------|----------|-------------|--------|
-| Identity | Least Privilege Role | IAM | Enforced |
-| Data | Encryption at Rest | KMS CMK | Enabled |
-| Data | Versioning | S3 | Enabled |
-| Network | Public Access Block | S3 |  Enabled |
-| Audit | API Logging | CloudTrail | Multi-region |
-| Audit | Log Validation | CloudTrail |  Enabled |
-| Audit | Centralized Logs | CloudWatch |  Integrated |
-| CI/CD | IaC Security Scan | tfsec |  Passed |
-| CI/CD | Policy Scan | Checkov |  Scoped Enforcement |
-| CI/CD | Format Validation | Terraform fmt |  Enforced |
+- Custom key policies
+- Rotation enforcement
+- Principal-level access control
+- Explicit audit visibility
+
+AWS managed keys do not provide equivalent granular governance control.
 
 ---
 
-# CI/CD Security Enforcement
+## Security Controls Implemented
+
+| # | Control | Layer | Implementation | What It Prevents |
+|---|----------|--------|----------------|-----------------|
+| 1 | Encryption at Rest | Data | KMS CMK | Plaintext data exposure |
+| 2 | S3 Versioning | Data | Enabled | Log tampering |
+| 3 | Public Access Block | Network | All 4 blocks enabled | Public bucket exposure |
+| 4 | Least Privilege IAM | Identity | Scoped policies | Privilege escalation |
+| 5 | CloudTrail Multi-Region | Audit | is_multi_region_trail = true | Regional blind spots |
+| 6 | Log File Validation | Audit | enable_log_file_validation = true | Log tampering |
+| 7 | CloudWatch Integration | Monitoring | Log group + role | Delayed detection |
+| 8 | IaC Security Scan | CI/CD | tfsec | Insecure Terraform |
+| 9 | Policy Enforcement | CI/CD | Checkov | Compliance drift |
+| 10 | Terraform Validation | CI/CD | terraform validate | Broken configuration |
+| 11 | Format Enforcement | CI/CD | terraform fmt | Inconsistent code quality |
+
+---
+
+## CI/CD Security Enforcement
 
 Pipeline Name:
 ```
@@ -149,162 +184,205 @@ Trigger:
 On push to main branch
 ```
 
-### Enforcement Stages
+Stages:
 
-1. ✅ Terraform Initialization  
-2. ✅ Terraform Format Enforcement  
-3. ✅ Terraform Validation  
+1. ✅ Terraform Init  
+2. ✅ Terraform Format  
+3. ✅ Terraform Validate  
 4. ✅ tfsec Scan (Blocks HIGH findings)  
-5. ✅ Checkov Policy Scan (Soft fail with scoped rules)
+5. ✅ Checkov Scan (Scoped Governance)
 
 Pipeline Status:
-✅ Green (All stages passed)
+✅ All stages passed (Green)
 
 ---
 
-# Project Structure
+## Project Structure
 
-```
+```bash
 secureflow-devsecops/
+│
+├── providers.tf                # AWS provider configuration
+├── main.tf                     # Core infrastructure (KMS, S3, CloudTrail, IAM)
+├── variables.tf                # Input variable definitions
+├── outputs.tf                  # Resource outputs
+├── .gitignore                  # Excludes state files and secrets
+├── README.md                   # This documentation
 │
 ├── .github/
 │   └── workflows/
-│       └── secure-pipeline.yml
+│       └── secure-pipeline.yml # CI/CD security pipeline
 │
-├── terraform/
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   └── provider.tf
-│
-├── docs/
-│   └── screenshots/
-│       ├── 01-github-actions-pipeline-green.png
-│       ├── 02-s3-bucket-encrypted-versioned.png
-│       ├── 03-cloudtrail-secure-config.png
-│       └── 04-terminal-terraform-apply-success.png
-│
-├── .gitignore
-└── README.md
+└── screenshots/
+    ├── 01-github-actions-pipeline-green.png
+    ├── 02-s3-bucket-encrypted-versioned.png
+    ├── 03-cloudtrail-secure-config.png
+    └── 04-terminal-terraform-apply-success.png
 ```
 
 ---
 
-# Prerequisites
+## Prerequisites
 
 | Tool | Minimum Version |
-|------|-----------------|
-| Terraform | >= 1.3 |
-| AWS CLI | >= 2.0 |
+|------|----------------|
+| Terraform | 1.5.0 |
+| AWS CLI | 2.0 |
 | Git | Any |
+| GitHub Account | Required |
 | AWS Account | Free Tier Compatible |
 
-Required IAM permissions include:
-```
-s3:*, cloudtrail:*, kms:*, logs:*, iam:*
+Verify installation:
+
+```bash
+terraform version
+aws --version
+git --version
+aws sts get-caller-identity
 ```
 
 ---
 
-# Quick Start
-
-### Clone Repository
+## Quick Start
 
 ```bash
+# Clone repository
 git clone https://github.com/AdeoyeEmmanuel2020/secureflow-devsecops.git
 cd secureflow-devsecops
-```
 
-### Configure AWS
-
-```bash
+# Configure AWS credentials
 aws configure
-```
 
-### Deploy Infrastructure
+# Initialise Terraform
+terraform init
 
-```bash
-terraform -chdir=terraform init
-terraform -chdir=terraform apply
+# Validate configuration
+terraform validate
+
+# Preview changes
+terraform plan -out=tfplan
+
+# Deploy
+terraform apply tfplan
+
+# View outputs
+terraform output
 ```
 
 ---
 
-# Deployment Screenshots
+## Module Documentation
 
-## 1️⃣ GitHub Actions Pipeline — Green
+### `main.tf`
 
-**Proof:**
-- github-actions-pipeline-green
-- tfsec passed
-- Checkov ran
-- All steps successful
+Creates:
 
-![Pipeline](docs/screenshots/01-github-actions-pipeline-green.png)
+- `aws_kms_key` — Customer Managed Key with rotation
+- `aws_s3_bucket` — Secure bucket for logs
+- `aws_s3_bucket_public_access_block` — Blocks public exposure
+- `aws_s3_bucket_versioning` — Enables object versioning
+- `aws_cloudtrail` — Multi-region audit logging
+- `aws_cloudwatch_log_group` — Centralized logs
+- `aws_iam_role` — Least privilege role
+- `aws_iam_role_policy` — Scoped CloudWatch permissions
+
+Key Outputs:
+
+- `bucket_name`
+- `cloudtrail_name`
+- `kms_key_arn`
 
 ---
 
-## 2️⃣ Secure S3 Bucket
+## Compliance Alignment
 
-Bucket:
+| Control Domain | Implementation | Standard Reference |
+|---------------|----------------|-------------------|
+| Encryption | KMS CMK | CIS AWS 2.2 |
+| Audit Logging | CloudTrail multi-region | CIS AWS 3.x |
+| Log Validation | enable_log_file_validation | SOC2 CC7.2 |
+| Access Control | IAM least privilege | CIS AWS 1.16 |
+| Change Management | Terraform only | SOC2 CC8.1 |
+| Monitoring | CloudWatch integration | ISO 27001 A.12.4 |
+| Shift-Left Security | tfsec + Checkov | DevSecOps best practice |
+
+---
+
+## Deployed Infrastructure — Live Resource IDs
+
+Example output from `terraform output`:
+
 ```
-secureflow-f587ea6f
+bucket_name = "secureflow-f587ea6f"
+cloudtrail_name = "secureflow-trail"
+kms_key_arn = "arn:aws:kms:us-east-1:XXXXXXXXXXXX:key/xxxxxxxx-xxxx"
 ```
 
-Captured:
-- Encryption Enabled (AES-256)
+---
+
+## Terminal Evidence
+
+### 01 — Terraform Apply Output
+![Terraform Apply](screenshots/04-terminal-terraform-apply-success.png)
+
+All resources created successfully.  
+Outputs confirm bucket name, trail name, and KMS ARN.
+
+---
+
+## AWS Console Evidence
+
+### 02 — S3 Bucket Configuration
+![S3](screenshots/02-s3-bucket-encrypted-versioned.png)
+
+- Encryption Enabled (AES-256 via KMS)
 - Versioning Enabled
-- Tags applied
-- Public access blocked
-
-![S3](docs/screenshots/02-s3-bucket-encrypted-versioned.png)
+- Tags Applied
+- Public Access Blocked
 
 ---
 
-## 3️⃣ CloudTrail Configuration
+### 03 — CloudTrail Configuration
+![CloudTrail](screenshots/03-cloudtrail-secure-config.png)
 
-Captured:
 - Trail name: secureflow-trail
 - Status: Logging enabled
-- Multi-region: Enabled
-- AWSCloudTrailWrite policy
-- Log validation enabled
-
-![CloudTrail](docs/screenshots/03-cloudtrail-secure-config.png)
+- Multi-region: Yes
+- Log validation: Enabled
+- CloudWatch integration active
 
 ---
 
-## 4️⃣ Terraform Apply Output
+### 04 — GitHub Actions Pipeline
+![Pipeline](screenshots/01-github-actions-pipeline-green.png)
 
-Captured:
-- Terraform Apply Output
-- Resources created
-- No errors
-
-![Terraform](docs/screenshots/04-terminal-terraform-apply-success.png)
-
----
-
-# Governance Strategy
-
-This project demonstrates risk-based DevSecOps governance:
-
-- High-risk findings blocked via tfsec
-- Non-critical enterprise controls scoped via Checkov
-- CI/CD fails fast on insecure configuration
-- Encryption and logging enforced by design
-
-This mirrors real enterprise DevSecOps implementation patterns.
+- tfsec passed
+- Checkov ran
+- All stages green
+- No HIGH severity findings
 
 ---
 
-# Destroy Infrastructure
+## Destroy Infrastructure
 
 ```bash
-terraform -chdir=terraform destroy -auto-approve
+terraform destroy -auto-approve
 ```
 
-Always destroy Free Tier resources when finished to avoid charges.
+This removes all resources and avoids ongoing charges.
+
+---
+
+## Contributing
+
+1. Fork repository
+2. Create feature branch
+3. Run:
+   ```bash
+   terraform fmt -recursive
+   terraform validate
+   ```
+4. Submit Pull Request
 
 ---
 
@@ -313,8 +391,8 @@ Always destroy Free Tier resources when finished to avoid charges.
 **Adeoye Emmanuel**  
 AWS Certified Solutions Architect | DevSecOps Engineer  
 
-LinkedIn: https://www.linkedin.com/in/emmanuel-adeoye-29187bb7  
-GitHub: https://github.com/AdeoyeEmmanuel2020  
+Email: Emmanuelofgrace@gmail.com  
+LinkedIn: www.linkedin.com/in/emmanuel-adeoye-29187bb7  
 
 ---
 
