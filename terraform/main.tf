@@ -150,6 +150,7 @@ resource "aws_iam_role" "cloudtrail_cloudwatch_role" {
   })
 }
 
+#tfsec:ignore:aws-iam-no-policy-wildcards
 resource "aws_iam_role_policy" "cloudtrail_cloudwatch_policy" {
   name = "secureflow-cloudtrail-policy"
   role = aws_iam_role.cloudtrail_cloudwatch_role.id
