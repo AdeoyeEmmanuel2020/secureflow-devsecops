@@ -16,3 +16,14 @@ Framework references support engineering traceability only; they do not establis
 ## Exception record schema
 
 Every exception records the control/rule, resource and environment, rationale, threat and impact, compensating control, owner, approval date, expiry date, and review evidence. Inline suppressions without this record are not acceptable governance.
+
+## Current reference-architecture exceptions
+
+| Check | Rationale | Compensating treatment | Review trigger |
+|---|---|---|---|
+| CKV_AWS_109, CKV_AWS_111, CKV_AWS_356 | KMS key policies require an account-root administrative statement and service actions represented with `*`; use is bounded by the key, service principal, source ARN, account, and encryption context | Explicit key-policy review and production separation of key administrators from users | KMS policy or identity model changes |
+| CKV_AWS_144 | Cross-Region S3 replication requires a second-region destination and role outside this single-account research boundary | Multi-Region event capture, versioning, and a documented archive-account target state | Production or resilience-scope adoption |
+| CKV_AWS_145 | The S3 server-access-log destination uses SSE-S3 because this delivery path is not modelled with a customer-managed key; primary CloudTrail evidence uses the CMK | Restricted delivery policy, TLS-only access, public-access block, and versioning | Logging architecture changes |
+| CKV2_AWS_62 | No downstream S3 event consumer is inside the current boundary | CloudTrail-to-CloudWatch delivery and SNS trail notifications provide operational signals | Event-driven detection is added |
+
+These identifiers are explicitly scoped in CI. Expansion requires an updated threat model, accountable owner, rationale, compensating treatment, and review trigger.

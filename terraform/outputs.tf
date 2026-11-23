@@ -22,3 +22,8 @@ output "kms_key_arn" {
   description = "ARN of the customer-managed key protecting audit evidence."
   value       = aws_kms_key.audit.arn
 }
+
+output "cloudtrail_notification_topic_arn" {
+  description = "SNS topic used by CloudTrail for delivery notifications."
+  value       = aws_sns_topic.cloudtrail.arn
+}

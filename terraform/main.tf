@@ -84,13 +84,7 @@ resource "aws_s3_bucket" "access_logs" {
 
 resource "aws_s3_bucket_ownership_controls" "access_logs" {
   bucket = aws_s3_bucket.access_logs.id
-  rule { object_ownership = "BucketOwnerPreferred" }
-}
-
-resource "aws_s3_bucket_acl" "access_logs" {
-  depends_on = [aws_s3_bucket_ownership_controls.access_logs]
-  bucket     = aws_s3_bucket.access_logs.id
-  acl        = "log-delivery-write"
+  rule { object_ownership = "BucketOwnerEnforced" }
 }
 
 resource "aws_s3_bucket_public_access_block" "access_logs" {
@@ -110,6 +104,19 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "access_logs" {
   bucket = aws_s3_bucket.access_logs.id
   rule {
     apply_server_side_encryption_by_default { sse_algorithm = "AES256" }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "access_logs" {
+  depends_on = [aws_s3_bucket_versioning.access_logs]
+  bucket     = aws_s3_bucket.access_logs.id
+
+  rule {
+    id     = "manage-access-log-lifecycle"
+    status = "Enabled"
+    filter {}
+    abort_incomplete_multipart_upload { days_after_initiation = 7 }
+    noncurrent_version_expiration { noncurrent_days = var.noncurrent_version_retention_days }
   }
 }
 
@@ -148,7 +155,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "evidence" {
 }
 
 resource "aws_s3_bucket_logging" "evidence" {
-  depends_on    = [aws_s3_bucket_acl.access_logs]
+  depends_on    = [aws_s3_bucket_policy.access_logs]
   bucket        = aws_s3_bucket.evidence.id
   target_bucket = aws_s3_bucket.access_logs.id
   target_prefix = "evidence-access/"
@@ -162,10 +169,55 @@ resource "aws_s3_bucket_lifecycle_configuration" "evidence" {
     id     = "retain-noncurrent-evidence"
     status = "Enabled"
     filter {}
+    abort_incomplete_multipart_upload { days_after_initiation = 7 }
     noncurrent_version_expiration {
       noncurrent_days = var.noncurrent_version_retention_days
     }
   }
+}
+
+data "aws_iam_policy_document" "access_logs_bucket" {
+  statement {
+    sid       = "DenyInsecureTransport"
+    effect    = "Deny"
+    actions   = ["s3:*"]
+    resources = [aws_s3_bucket.access_logs.arn, "${aws_s3_bucket.access_logs.arn}/*"]
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+
+  statement {
+    sid       = "AllowS3ServerAccessLogs"
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.access_logs.arn}/evidence-access/*"]
+    principals {
+      type        = "Service"
+      identifiers = ["logging.s3.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = [aws_s3_bucket.evidence.arn]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+  policy = data.aws_iam_policy_document.access_logs_bucket.json
 }
 
 data "aws_iam_policy_document" "evidence_bucket" {
@@ -265,6 +317,34 @@ resource "aws_iam_role_policy" "cloudtrail_logs" {
   policy = data.aws_iam_policy_document.cloudtrail_logs.json
 }
 
+resource "aws_sns_topic" "cloudtrail" {
+  name              = "${var.name_prefix}-cloudtrail-notifications"
+  kms_master_key_id = "alias/aws/sns"
+}
+
+data "aws_iam_policy_document" "cloudtrail_sns" {
+  statement {
+    sid       = "AllowCloudTrailPublish"
+    effect    = "Allow"
+    actions   = ["sns:Publish"]
+    resources = [aws_sns_topic.cloudtrail.arn]
+    principals {
+      type        = "Service"
+      identifiers = ["cloudtrail.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceArn"
+      values   = [local.trail_arn]
+    }
+  }
+}
+
+resource "aws_sns_topic_policy" "cloudtrail" {
+  arn    = aws_sns_topic.cloudtrail.arn
+  policy = data.aws_iam_policy_document.cloudtrail_sns.json
+}
+
 resource "aws_cloudtrail" "audit" {
   name                          = local.trail_name
   s3_bucket_name                = aws_s3_bucket.evidence.id
@@ -275,9 +355,11 @@ resource "aws_cloudtrail" "audit" {
   kms_key_id                    = aws_kms_key.audit.arn
   cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail.arn}:*"
   cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail.arn
+  sns_topic_name                = aws_sns_topic.cloudtrail.name
 
   depends_on = [
     aws_s3_bucket_policy.evidence,
-    aws_iam_role_policy.cloudtrail_logs
+    aws_iam_role_policy.cloudtrail_logs,
+    aws_sns_topic_policy.cloudtrail
   ]
 }
