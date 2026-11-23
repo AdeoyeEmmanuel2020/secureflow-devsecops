@@ -7,9 +7,11 @@ resource "random_id" "suffix" {
 
 locals {
   trail_name        = "${var.name_prefix}-trail"
+  sns_topic_name    = "${var.name_prefix}-cloudtrail-notifications"
   evidence_bucket   = "${var.name_prefix}-evidence-${random_id.suffix.hex}"
   access_log_bucket = "${var.name_prefix}-access-logs-${random_id.suffix.hex}"
   trail_arn         = "arn:${data.aws_partition.current.partition}:cloudtrail:${var.aws_region}:${data.aws_caller_identity.current.account_id}:trail/${local.trail_name}"
+  sns_topic_arn     = "arn:${data.aws_partition.current.partition}:sns:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${local.sns_topic_name}"
 }
 
 data "aws_iam_policy_document" "kms" {
@@ -62,6 +64,22 @@ data "aws_iam_policy_document" "kms" {
 
     actions   = ["kms:DescribeKey"]
     resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowSNSUseForCloudTrailNotifications"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["sns.amazonaws.com"]
+    }
+    actions   = ["kms:Decrypt", "kms:GenerateDataKey*"]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceArn"
+      values   = [local.sns_topic_arn]
+    }
   }
 }
 
@@ -318,8 +336,8 @@ resource "aws_iam_role_policy" "cloudtrail_logs" {
 }
 
 resource "aws_sns_topic" "cloudtrail" {
-  name              = "${var.name_prefix}-cloudtrail-notifications"
-  kms_master_key_id = "alias/aws/sns"
+  name              = local.sns_topic_name
+  kms_master_key_id = aws_kms_key.audit.arn
 }
 
 data "aws_iam_policy_document" "cloudtrail_sns" {
